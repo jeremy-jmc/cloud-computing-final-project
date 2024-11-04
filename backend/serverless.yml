@@ -1,0 +1,15 @@
+org: jeremymatos
+service: api-s3
+
+provider:
+  name: aws
+  runtime: python3.12	
+  # Default memory size for functions (default: 256MB)
+  memorySize: 256
+  timeout: 30
+  iam:
+    role: arn:aws:iam::982830027345:role/LabRole
+
+functions:
+
+# https://github.com/fastapi/fastapi/issues/2712
