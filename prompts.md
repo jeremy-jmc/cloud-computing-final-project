@@ -70,15 +70,9 @@ Debe elaborar un Diagrama de Arquitectura de Solución que incluya y relacione t
     -  Todas las API deben ser protegidas con token de acceso
 
 
-
-
 ### 1. Funcionalidad Principal
 
-Sistema de streaming musical multi-tenant que permite a diferentes organizaciones (tenants) tener su propia plataforma de música. Cada tenant podría ser:
-* Sellos discográficos independientes
-* Plataformas de radio online
-* Servicios de música regional/local
-* Plataformas educativas de música
+App de Spotify.
 
 ### 2. APIs Propuestas (6 microservicios)
 
@@ -119,17 +113,17 @@ Sistema de streaming musical multi-tenant que permite a diferentes organizacione
    - Reportes de uso
 
 
-### 3. Análisis de Datos
+### 4. Análisis de Datos
 
 Consultas SQL Multi-tenant propuestas:
-1. Top canciones por reproducciones por tenant
+1. Top canciones por reproducciones por tenant (usuario)
 2. Comportamiento de usuarios por género musical
 3. Análisis de playlists más populares
 4. Patrones de escucha por hora/día
 5. Retención de usuarios por tipo de contenido
 6. Análisis de artistas emergentes
 
-### 4. Dashboard en Looker Studio
+### 5. Dashboard en Looker Studio
 
 Gráficos propuestos:
 1. Mapa de calor de actividad por hora/día
@@ -142,136 +136,154 @@ Gráficos propuestos:
 8. Gráfico de área de crecimiento de biblioteca
 9. Gráfico de barras apiladas de tipos de dispositivos
 10. Gráfico de líneas de tendencias de escucha
+11. Canciones más reproducidas
+12. Artistas más populares
+13. Distribución de géneros
+14. Tendencias temporales de escucha
+15. Análisis de playlists
+16. Métricas de engagement de usuarios
 
 ```mermaid
-flowchart TD
-    subgraph Frontend
-        S3_Web["S3 Buckets (dev/test/prod)"]
-        WebApp["React Web App (Multi-tenant)"]
+graph TB
+    subgraph Frontend [Frontend - S3 Buckets]
+        WebDev[Web App DEV]
+        WebTest[Web App TEST]
+        WebProd[Web App PROD]
     end
 
-    subgraph Backend ["Backend (APIs Lambda + API Gateway)"]
-        Auth["API Usuarios (Python)"]
-        Songs["API Canciones (Python)"]
-        Playlists["API Playlists (Python)"]
-        Artists["API Artistas (Node.js)"]
-        Albums["API Álbumes (Node.js)"]
-        Stats["API Estadísticas (Node.js)"]
+    subgraph Backend [Backend - API Gateway + Lambda]
+        API[API Gateway]
+        API --> Auth[Auth Service]
+        API --> Songs[Songs Service]
+        API --> Playlists[Playlists Service]
+        API --> Artists[Artists Service]
+        API --> Albums[Albums Service]
+        API --> UserPrefs[User Preferences Service]
         
-        DDB[(DynamoDB Multi-tenant)]
+        subgraph DynamoDB
+            UserTable[Users Table]
+            SongsTable[Songs Table]
+            PlaylistsTable[Playlists Table]
+            ArtistsTable[Artists Table]
+            AlbumsTable[Albums Table]
+            PrefsTable[Preferences Table]
+        end
+
+        Auth --> UserTable
+        Songs --> SongsTable
+        Playlists --> PlaylistsTable
+        Artists --> ArtistsTable
+        Albums --> AlbumsTable
+        UserPrefs --> PrefsTable
     end
 
-    subgraph DataScience ["Data Science"]
-        VM["MV Ciencia Datos (t2.medium)"]
-        S3_Data["S3 Buckets Data (dev/test/prod)"]
+    subgraph DataScience [Data Science Infrastructure]
+        VM[MV Ciencia Datos]
         
-        subgraph Containers ["Docker Containers"]
-            C1["Ingesta Canciones"]
-            C2["Ingesta Playlists"]
-            C3["Ingesta Artistas"]
-            C4["Ingesta Álbumes"]
-            C5["Ingesta Estadísticas"]
-            ETL["Container ETL"]
+        subgraph Containers [Docker Containers]
+            C1[Songs Ingestion]
+            C2[Playlists Ingestion]
+            C3[Artists Ingestion]
+            C4[Albums Ingestion]
+            C5[Users Ingestion]
+            C6[ETL Container]
         end
         
-        Glue["AWS Glue Catálogo"]
-        Athena["AWS Athena Consultas SQL"]
-        MySQL[(MySQL DB Resúmenes)]
-        Looker["Google Looker Dashboard"]
+        S3Data[S3 Data Bucket]
+        GlueCatalog[AWS Glue Catalog]
+        Athena[AWS Athena]
+        MySQL[MySQL DB]
+        Looker[Google Looker Studio]
+        
+        C1 & C2 & C3 & C4 & C5 --> S3Data
+        S3Data --> GlueCatalog
+        GlueCatalog --> Athena
+        Athena --> C6
+        C6 --> MySQL
+        MySQL --> Looker
     end
 
-    WebApp --> Backend
-    Backend --> DDB
-    DDB --> Containers
-    Containers --> S3_Data
-    S3_Data --> Glue
-    Glue --> Athena
-    Athena --> ETL
-    ETL --> MySQL
-    MySQL --> Looker
+    WebDev & WebTest & WebProd --> API
 ```
 
 
 ```mermaid
 erDiagram
     Users {
-        string tenant_id PK "Partition Key | Ejemplo: 'SPOTIFY-FREE'"
-        string user_name "Sort Key | Ejemplo: 'USR#123456'"
-        string email "usuario@email.com"
-        string name "Juan Pérez"
-        string lastname "Ayala Guanilo"
-        timestamp last_login "2024-03-15T10:30:00Z"
-        string role "user"
-    }
-
-    Songs {
-        string tenant_id PK "Partition Key | Ejemplo: 'UNIVERSAL-MUSIC'"
-        string song_id "Sort Key | Ejemplo: 'ARTIST_ID#ALBUM_ID#SONG_NAME'"
-        string title "Bohemian Rhapsody"
-        number duration "354"
-        number popularity "98"
-        array genres "['rock', 'classic rock']"
-        string audio_url "s3://bucket/songs/789.mp3"
+        string email PK "Partition Key | Email del usuario"
+        string user_name "Sort Key | Profile name"
+        string name "Nombre completo"
+        number edad "Edad del usuario"
+        string password "Contraseña hasheada"
+        timestamp created_at "Fecha de creación"
+        string GSI1 "GSI1: edad | Para análisis demográfico"
+        string GSI2 "GSI2: created_at | Para búsquedas por fecha de creación"
     }
 
     Artists {
-        string tenant_id PK "Partition Key | Ejemplo: 'UNIVERSAL-MUSIC'"
-        string artist_name "Sort Key | Ejemplo: 'Queen'"
-        array genres "['rock', 'pop']"
-        string bio "Legendary British rock band..."
-        number monthly_listeners "45000000"
-        number popularity "95"
-        timestamp created_at "2024-01-01T00:00:00Z"
-    }
-
-    Albums {
-        string tenant_id PK "Partition Key | Ejemplo: 'UNIVERSAL-MUSIC'"
-        string album_id "Sort Key | Ejemplo: 'ALBUM_ID'"
-        string title "A Night at the Opera"
-        string artist_id "ART#456"
-        date release_date "1975-11-21"
-        array genres "['rock', 'classic rock']"
-        number total_tracks "12"
-        number popularity "94"
+        string email PK "Primary Key - Email único del artista"
+        string artist_name "Sort Key - Nombre del artista"
+        array genres "Array de géneros musicales"
+        number popularity "Índice de popularidad"
+        timestamp created_at "Fecha de creación"
+        string record_label "Compañía discográfica"
+        string GSI1 "GSI1: record_label | Para búsquedas por compañía discográfica"
     }
 
     Playlists {
-        string tenant_id PK "Partition Key | Ejemplo: 'REGION#LATAM'"
-        string playlist_id "Sort Key | Ejemplo: 'PLY#321'"
-        string name "My Rock Classics"
-        string user_id "USR#123456"
-        number followers "156"
-        timestamp last_updated "2024-03-20T15:45:00Z"
-        boolean is_public "true"
+        string user_email PK "Partition Key | Users.email"
+        string playlist_name "Sort Key | Nombre de la playlist"
+        string descripcion "Descripcion de la playlist"
+        number songs_number "Numero de canciones"
+        number total_time "Tiempo aproximado de duracion"
+        bool public "Si la playlist es publica o privada"
+        string wallpaper_s3 "S3 wallpaper path"
+        timestamp created_at "Fecha de creación"
+    }
+
+    Songs {
+        string artist_id PK "Partition Key | ID del artista | Nombre o email"
+        string song_title "Sort Key | Titulo de la cancion"
+        string album_name "Nombre del album"
+        number duration "Duración en segundos"
+        number numero_reproducciones "Numero de reproducciones"
+        number max_popularity "Maxima popularidad de una cancion"
+        number popularity "Índice de popularidad"
+        string GSI "GSI: album_name | Para busquedas por canciones de artista y album"
+        string LSI1 "LSI1: max_popularity | Para las playlist: This is <artista> . Tomar las de maxima_popularidad historica"
+    }
+
+    
+    Albums {
+        string artist_id PK "Partition Key | ID del artista | Nombre o email"
+        string album_title "Sort Key | Titulo del album"
+        string release_date "Fecha de lanzamiento"
     }
 
     PlaylistSongs {
-        string tenant_id PK "Partition Key | Ejemplo: 'GENRE#ROCK'"
-        string playlist_song_id "Sort Key | Ejemplo: 'PLY#321#SONG#789'"
-        string playlist_id "PLY#321"
-        string song_id "SONG#789"
-        number position "1"
-        timestamp added_at "2024-03-20T15:45:00Z"
-        string added_by "USR#123456"
+        string playlist_name PK "Partition Key | Nombre de la playlist"
+        string song_name "Sort Key | Nombre de la cancion"
+        number position "Posición en la playlist"
+        timestamp added_at "Fecha de agregación"
     }
 
-    PlaybackStats {
-        string tenant_id PK "Partition Key | Ejemplo: 'COUNTRY#PE'"
-        string stat_id "Sort Key | Ejemplo: '2024-03-20#USR123#SONG789'"
-        string song_id "SONG#789"
-        string user_id "USR#123456"
-        timestamp played_at "2024-03-20T14:30:00Z"
-        number duration_played "180"
-        string context_type "playlist"
-        string device_type "mobile"
+
+    UserReplays {
+        string email PK "Partition Key | Email del usuario"
+        string song_id "Sort Key | ID de la canción (ID del artista + título de la canción)"
+        timestamp replayed_at "Fecha y hora de la reproducción"
+        number replay_duration "Duración de la reproducción en segundos"
+        string GSI1 "GSI1: replayed_at | Para buscar reproducciones por fecha"
+        string GSI2 "GSI2: song_id | Para buscar reproducciones por canción"
     }
 
-    Users ||--o{ Playlists : "creates"
-    Songs ||--o{ PlaybackStats : "played in"
     Artists ||--o{ Songs : "creates"
+    Artists ||--o{ Albums : "releases"
     Albums ||--o{ Songs : "contains"
-    Users ||--o{ PlaybackStats : "generates"
+    Users ||--o{ Playlists : "creates"
     Playlists ||--o{ PlaylistSongs : "contains"
-    Songs ||--o{ PlaylistSongs : "belongs to"
+    Songs ||--o{ PlaylistSongs : "appears_in"
+    Users ||--o{ UserReplays : "replays"
+    Songs ||--o{ UserReplays : "is_played_in"
 ```
 
