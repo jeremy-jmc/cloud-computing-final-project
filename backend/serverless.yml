@@ -12,4 +12,18 @@ provider:
 
 functions:
 
-# https://github.com/fastapi/fastapi/issues/2712
+
+# BASE DE DATOS: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/code
+#   Usar minimo 1 GSI, LSI
+#   Implementar la funcionalidad "Copia de seguridad - Recuperacion en un momento dado (PITR)"
+#   DATOS DE PRUEBA: Minimo 10K registros x tabla repartidos entre 3 tenant_id distintos
+
+# LAMBDA & DYNAMODB CREATION: https://github.com/jeremy-jmc/api-pelicula/blob/main/serverless.yml
+
+# DOCUMENTACION: 
+#   https://github.com/fastapi/fastapi/issues/2712
+#   https://stackoverflow.com/questions/64377405/how-to-generate-swagger-documentation-for-aws-lambda-python-api
+
+# SEGURIDAD: https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions/LoginUsuario?tab=code
+#    Implementar un API de usuarios con token de acceso
+#    Todas las API deben ser protegidas con token de acceso

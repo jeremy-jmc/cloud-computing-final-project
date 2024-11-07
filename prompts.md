@@ -1,7 +1,8 @@
 # PROYECTO FINAL CLOUD COMPUTING
 
 - **Integrantes:** Máximo 5 personas por grupo
-- **Funcionalidad:** Usted elegirá la funcionalidad  a implementar. Ejemplo: Sistema para un  Banco, para una compañía de Seguros, para  una cadena de cines, para una aerolínea, para una casa de apuestas en línea, para una tienda de Comercio Electrónico, para un videojuego en línea, para streaming de música como Spotify, etc.
+- **Funcionalidad:** Usted elegirá la funcionalidad  a implementar. Ejemplo: Sistema para un  Banco, para una compañía de Seguros, para  una cadena de cines, para una aerolínea, para una casa de apuestas en línea, para una tienda de Comercio Electrónico, para un videojuego en línea, para streaming de música como Spotify, etc. Considere que si hace un red social como Spotify, el `tenant_id` en la Tabla Usuarios es el email del usuario.
+
 - **Arquitectura:**
     - Multi-tenancy
 
@@ -39,7 +40,7 @@
 - **Analítica de Datos:** Debe mostrar evidencia de como mínimo 6 consultas SQL Multi-tenancy que unan varias tablas con AWS Athena y crear como mínimo 3 vistas Multi-tenancy.
 - **Transformación:** Debe implementar 1 contenedor docker ETL (Extract, Transform, Load) en python que ejecute queries SQL con Athena e inserte los resultados en tablas resúmenes de BD MySQL (Utilizar MySQL en contenedor en “MV Ciencia Datos”). Debe crear un diagrama Entidad / Relación que relacione **todas las tablas** resúmenes.
 - **Logs:** Los 6 contenedores deberán dejar archivos de logs con el mismo formato en un mismo directorio de la máquina virtual “MV Ciencia Datos” que tengan como mínimo: fecha_hora (hasta milisegundo), tipo_log (INFO, WARNING, ERROR, CRITICAL), nombre_contenedor, mensaje. Deberá mostrar evidencia de ejecución de queries sobre los logs con `lnav` para mostrar por cada contenedor su hora de inicio y fin, cantidad de registros procesados y los pasos más importantes del proceso con la información más relevante.
-- **Dashboard o Panel de Control:** Debe implementar un Dashboard (Informe) Multi-tenancy en Google Looker Studio que utilice como fuente de datos la BD MySQL y tenga 10 gráficos de 5 tipos diferentes y 2 filtros como mínimo. Revise estos enlaces para Looker Studio:** enlace1, enlace2.
+- **Dashboard o Panel de Control:** Debe implementar un Dashboard (Informe) Multi-tenancy en *Google Looker Studio* que utilice como fuente de datos la BD MySQL y tenga 10 gráficos de 5 tipos diferentes y 2 filtros como mínimo. Revise estos enlaces para *Looker Studio*: [enlace1](https://drive.google.com/file/d/1bwhr8ajhawdeUxgyT0g5PpH8A-BG584W/view), [enlace2](https://drive.google.com/file/d/1bn9B6C2zx-OOBA2zDZeH29HEsMWUKn-N/view)
 - **Código Fuente:** Debe incluir enlaces a repositorios públicos de github con las fuentes.
 
 <!-- (*) Referencia:** https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Scan.html -->
@@ -50,6 +51,23 @@ Debe elaborar un Diagrama de Arquitectura de Solución que incluya y relacione t
 - BackEnd
 - FrontEnd
 - Data Science
+
+## Consideraciones
+
+- BASE DE DATOS: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/code
+    - Usar minimo 1 GSI, LSI
+    - Implementar la funcionalidad "Copia de seguridad - Recuperacion en un momento dado (PITR)"
+    - DATOS DE PRUEBA: Minimo 10K registros x tabla repartidos entre 3 tenant_id distintos
+
+- LAMBDA & DYNAMODB CREATION: https://github.com/jeremy-jmc/api-pelicula/blob/main/serverless.yml
+
+- DOCUMENTACION: 
+    - https://github.com/fastapi/fastapi/issues/2712
+    - https://stackoverflow.com/questions/64377405/how-to-generate-swagger-documentation-for-aws-lambda-python-api
+
+- SEGURIDAD: https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions/LoginUsuario?tab=code
+    -  Implementar un API de usuarios con token de acceso
+    -  Todas las API deben ser protegidas con token de acceso
 
 
 
