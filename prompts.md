@@ -68,6 +68,7 @@ Debe elaborar un Diagrama de Arquitectura de Solución que incluya y relacione t
 - SEGURIDAD: https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions/LoginUsuario?tab=code
     -  Implementar un API de usuarios con token de acceso
     -  Todas las API deben ser protegidas con token de acceso
+    - S10 Sesion 2: https://utec.zoom.us/rec/play/cXvDDeJ7Ykg14r_8mVsJZne6u6jNRLSmRMj23nqSvzp_8Uoeizl45xTVx-uxvFBztctxiycVHYLqA9H1.6fF6NRMYkz0BMfai
 
 
 ### 1. Funcionalidad Principal

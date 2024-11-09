@@ -5,12 +5,49 @@ provider:
   name: aws
   runtime: python3.12	
   # Default memory size for functions (default: 256MB)
-  memorySize: 256
+  memorySize: 1024
   timeout: 30
   iam:
     role: arn:aws:iam::982830027345:role/LabRole
-
+  environment:
+    TABLE_NAME: ${sls:stage}-t_comentarios
+  
 functions:
+  crear:
+    handler: seguridad_CrearUsuario.lambda_handler
+    events:
+      - http:
+          path: /usuarios/crear
+          method: post
+          cors: true
+          integration: lambda
+  login:
+    handler: seguridad_LoginUsuario.lambda_handler
+    events:
+      - http:
+          path: /usuarios/login
+          method: post
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+    TablaComentarios:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: tenant_id
+            AttributeType: S
+          - AttributeName: uuid
+            AttributeType: S
+        KeySchema:
+          - AttributeName: tenant_id
+            KeyType: HASH
+          - AttributeName: uuid
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
 
 
 # BASE DE DATOS: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/code

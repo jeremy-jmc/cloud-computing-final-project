@@ -13,7 +13,6 @@ from IPython.display import display
 
 pd.set_option('display.max_columns', None)
 
-path =  '/home/tenken/.cache/kagglehub/datasets/maharshipandya/-spotify-tracks-dataset/versions/1'
 # Load dataset
 df = (
     pd.read_csv(os.path.join(path, "dataset.csv"))
