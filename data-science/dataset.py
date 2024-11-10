@@ -1,23 +1,18 @@
 # https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/code
 # https://www.kaggle.com/datasets/joebeachcapital/30000-spotify-songs?select=spotify_songs.csv
 import kagglehub
-
-# Download latest version
-path = kagglehub.dataset_download("joebeachcapital/30000-spotify-songs")
-
-print("Path to dataset files:", path)
-
-
+import numpy as np
 import os
 import pandas as pd
 from IPython.display import display
 import uuid
-
 pd.set_option('display.max_columns', None)
 
-# Load dataset
+
+spotify_dataset_path = kagglehub.dataset_download("joebeachcapital/30000-spotify-songs")
+
 df = (
-    pd.read_csv(os.path.join(path, "spotify_songs.csv"))   # os.path.join(path, "dataset.csv")
+    pd.read_csv(os.path.join(spotify_dataset_path, "spotify_songs.csv"))   # os.path.join(path, "dataset.csv")
     # .drop(columns=['Unnamed: 0'])
     .dropna(how='any')
     # .loc[lambda df: df['track_artist'].str.isalnum()]
@@ -100,6 +95,39 @@ df_songs['max_popularity'] = (df_songs['popularity'] * df_songs['factor']).astyp
 df_songs = df_songs.sort_values(by=['album_name', 'rank'])
 display(df_songs)
 
+
+"""
+Users {
+    string email PK "Partition Key | Email del usuario"
+    string user_name "Sort Key | Profile name"
+    string name "Nombre completo"
+    number edad "Edad del usuario"
+    string password "Contraseña hasheada"
+    timestamp created_at "Fecha de creación"
+    string GSI1 "GSI1: edad | Para análisis demográfico"
+    string GSI2 "GSI2: created_at | Para búsquedas por fecha de creación"
+}
+"""
+users_dataset_path = kagglehub.dataset_download("arindamsahoo/social-media-users")
+
+df_users = (
+    pd.read_csv(os.path.join(users_dataset_path, "SocialMediaUsersDataset.csv"))
+    .sample(10000)
+    .rename(columns={
+        'DOB': 'birth_date',
+        'Country': 'country',
+        'City': 'city',
+    })
+)
+df_users['user_name'] = df_users['Name'].apply(lambda x: '_'.join(x.lower().split()))  
+df_users['email'] = df_users['user_name'].apply(lambda x: f"{x}@gmail.com")
+df_users['age'] = (pd.to_datetime('today') - pd.to_datetime(df_users['birth_date'])).dt.days // 365
+df_users['created_at'] = pd.to_datetime(df_users['birth_date']) + pd.to_timedelta(np.random.randint(15*365, 18*365, size=len(df_users)), unit='D')
+df_users.columns = [col.lower() for col in df_users.columns]
+df_users['password'] = '1234'
+display(df_users[['email', 'user_name', 'name', 'age', 'password', 'created_at', 'country', 'city']])
+# df_users['bcrypt_password'] = df_users['password'].apply(lambda x: bcrypt.hashpw(x.encode(), bcrypt.gensalt()).decode())
+
 """
 Playlists {
     string user_email PK "Partition Key | Users.email"
@@ -113,55 +141,49 @@ Playlists {
     number LSI1  "Indice de popularidad"
 }
 """
-
-df_playlists = (
-    df[['track_artist', 'track_album_name', 'track_album_release_date', 'track_id', 'duration', 'track_popularity']]
-    .rename(columns={
-        'track_artist': 'user_email',
-        'track_album_name': 'playlist_name',
-        'track_album_release_date': 'created_at',
-        'track_id': 'song_id',
-        'duration': 'duration',
-        'track_popularity': 'popularity'
-    })
-    .groupby(['user_email', 'playlist_name'], as_index=False)
-    .agg({
-        'song_id': 'count',
-        'duration': 'sum',
-        'popularity': 'mean',
-    })
-)
-df_playlists['wallpaper_s3'] = [f"s3://bucket/{uuid.uuid4().hex}.jpg" for _ in range(len(df_playlists))]
-display(df_playlists)
+# TODO: first create user table, then playlists table
 
 
 """
-Users {
-    string email PK "Partition Key | Email del usuario"
-    string user_name "Sort Key | Profile name"
-    string name "Nombre completo"
-    number edad "Edad del usuario"
-    string password "Contraseña hasheada"
-    timestamp created_at "Fecha de creación"
-    string GSI1 "GSI1: edad | Para análisis demográfico"
-    string GSI2 "GSI2: created_at | Para búsquedas por fecha de creación"
-}
-
-
 Albums {
     string artist_id PK "Partition Key | ID del artista | Nombre o email"
     string album_title "Sort Key | Titulo del album"
     string release_date "Fecha de lanzamiento"
 }
+"""
+df_albums = (
+    df[['artist_email', 'track_album_name', 'track_album_release_date', 'track_id', 'duration', 'track_popularity']]
+    .rename(columns={
+        'artist_email': 'artist_email',
+        'track_album_name': 'album_title',
+        'track_album_release_date': 'created_at',
+        'track_id': 'songs_number',
+        'duration': 'duration',
+        'track_popularity': 'album_popularity'
+    })
+    .groupby(['artist_email', 'album_title'], as_index=False)
+    .agg({
+        'songs_number': 'count',
+        'duration': 'sum',
+        'album_popularity': 'mean',
+    })
+)
+df_albums['wallpaper_s3'] = [f"s3://bucket/{uuid.uuid4().hex}.jpg" for _ in range(len(df_albums))]
+display(df_albums)
 
+
+"""
 PlaylistSongs {
     string playlist_name PK "Partition Key | Nombre de la playlist"
     string song_name "Sort Key | Nombre de la cancion"
     number position "Posición en la playlist"
     timestamp added_at "Fecha de agregación"
 }
+"""
+# TODO: Create playlist songs table
 
 
+"""
 UserReplays {
     string email PK "Partition Key | Email del usuario"
     string song_id "Sort Key | ID de la canción (ID del artista + título de la canción)"
@@ -170,7 +192,11 @@ UserReplays {
     string GSI1 "GSI1: replayed_at | Para buscar reproducciones por fecha"
     string GSI2 "GSI2: song_id | Para buscar reproducciones por canción"
 }
+"""
+# TODO: Create user replays table
 
+
+"""
 Artists ||--o{ Songs : "creates"
 Artists ||--o{ Albums : "releases"
 Albums ||--o{ Songs : "contains"
