@@ -87,7 +87,7 @@ resources:
             - AttributeName: likes
               KeyType: RANGE
             Projection:
-              ProjectionType: ALL   # ! ServerlessError2: An error occurred: TablaArtistas - Resource handler returned message: "Cannot perform more than one GSI creation or deletion in a single update" (RequestToken: d59f46db-1e2e-87b3-4ea6-4630bf6298ee, HandlerErrorCode: InvalidRequest).
+              ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
 # * https://www.npmjs.com/package/serverless-dynamodb-pitr
