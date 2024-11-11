@@ -222,13 +222,11 @@ erDiagram
     }
 
     Artists {
-        string email PK "Primary Key - Email único del artista"
-        string artist_name "Sort Key - Nombre del artista"
+        string artist_name "Partition Key - Nombre del artista"
+        number popularity "Sort Key - Índice de popularidad"
         array genres "Array de géneros musicales"
-        number popularity "Índice de popularidad"
         timestamp created_at "Fecha de creación"
-        string record_label "Compañía discográfica"
-        string GSI1 "GSI1: record_label | Para búsquedas por compañía discográfica"
+        string GSI1 "GSI1: generos | Para búsquedas por generos"
     }
 
     Playlists {

@@ -6,7 +6,14 @@ import os
 import pandas as pd
 from IPython.display import display
 import uuid
+import random
+from tqdm import tqdm
+from datetime import timedelta, datetime
+
+np.random.seed(42)
+random.seed(42)
 pd.set_option('display.max_columns', None)
+pd.set_option('display.max_colwidth', None)
 
 
 spotify_dataset_path = kagglehub.dataset_download("joebeachcapital/30000-spotify-songs")
@@ -51,7 +58,7 @@ df_artist = (
         subgenres=('playlist_subgenre', 'unique'),
         popularity=('track_popularity', 'mean'),
         created_at=('track_album_release_date', 'first'),
-        email=('artist_email', 'last')
+        # email=('artist_email', 'last')
         # record_label=('record_label', 'first')
     )
     .reset_index()
@@ -76,10 +83,10 @@ Songs {
 """
 
 df_songs = (
-    df[['artist_email', 'track_name', 
+    df[['track_artist', 'track_name', 
         'track_album_name', 'track_popularity', 'duration']]
     .rename(columns={
-        'artist_email': 'artist_id',
+        'track_artist': 'artist_name',
         'track_name': 'song_title',
         'track_album_name': 'album_name',
         'track_popularity': 'popularity',
@@ -125,7 +132,8 @@ df_users['age'] = (pd.to_datetime('today') - pd.to_datetime(df_users['birth_date
 df_users['created_at'] = pd.to_datetime(df_users['birth_date']) + pd.to_timedelta(np.random.randint(15*365, 18*365, size=len(df_users)), unit='D')
 df_users.columns = [col.lower() for col in df_users.columns]
 df_users['password'] = '1234'
-display(df_users[['email', 'user_name', 'name', 'age', 'password', 'created_at', 'country', 'city']])
+df_users = df_users[['email', 'user_name', 'name', 'age', 'password', 'created_at', 'country', 'city']]
+display(df_users)
 # df_users['bcrypt_password'] = df_users['password'].apply(lambda x: bcrypt.hashpw(x.encode(), bcrypt.gensalt()).decode())
 
 """
@@ -141,7 +149,50 @@ Playlists {
     number LSI1  "Indice de popularidad"
 }
 """
-# TODO: first create user table, then playlists table
+def generate_playlists(df_users, n_playlists=15000):
+    user_emails = df_users['email'].tolist()
+    
+    base_playlists = pd.DataFrame({
+        'user_email': user_emails,
+        'playlist_name': [f"Liked Songs" for _ in range(len(user_emails))]
+    })
+    
+    try:
+        additional_playlists = pd.DataFrame({
+            'user_email': np.random.choice(user_emails, n_playlists - len(user_emails)),
+            'playlist_name': [f"My Playlist {uuid.uuid4().hex[:8]}" for _ in range(n_playlists - len(user_emails))]
+        })
+    except:
+        additional_playlists = pd.DataFrame()
+    
+    df_playlists = pd.concat([base_playlists, additional_playlists])
+    
+    df_playlists['descripcion'] = [
+        random.choice([
+            "My favorite songs",
+            "Perfect for working",
+            "Workout mix",
+            "Chill vibes",
+            "Party time!",
+            "Road trip music",
+            "Study session",
+            "Weekend mood"
+        ]) for _ in range(len(df_playlists))
+    ]
+    
+    df_playlists['songs_number'] = np.random.randint(5, 100, size=len(df_playlists))
+    # df_playlists['total_time'] = -1
+    df_playlists['wallpaper_s3'] = [f"s3://playlists/{uuid.uuid4().hex}.jpg" for _ in range(len(df_playlists))]
+    # df_playlists['created_at'] = np.nan
+    
+    return df_playlists
+
+df_playlists = (
+    generate_playlists(df_users, 10000)
+    .merge(df_users[['email', 'created_at']].rename(columns={'email': 'user_email'}), on='user_email')
+)
+df_playlists['created_at'] = df_playlists['created_at'] + pd.to_timedelta(np.random.randint(0, 365, size=len(df_playlists)), unit='D')
+display(df_playlists)
 
 
 """
@@ -152,16 +203,16 @@ Albums {
 }
 """
 df_albums = (
-    df[['artist_email', 'track_album_name', 'track_album_release_date', 'track_id', 'duration', 'track_popularity']]
+    df[['track_artist', 'track_album_name', 'track_album_release_date', 'track_id', 'duration', 'track_popularity']]
     .rename(columns={
-        'artist_email': 'artist_email',
+        'track_artist': 'artist_name',
         'track_album_name': 'album_title',
         'track_album_release_date': 'created_at',
         'track_id': 'songs_number',
         'duration': 'duration',
         'track_popularity': 'album_popularity'
     })
-    .groupby(['artist_email', 'album_title'], as_index=False)
+    .groupby(['artist_name', 'album_title'], as_index=False)
     .agg({
         'songs_number': 'count',
         'duration': 'sum',
@@ -180,8 +231,41 @@ PlaylistSongs {
     timestamp added_at "Fecha de agregación"
 }
 """
-# TODO: Create playlist songs table
+def generate_playlist_songs(df_playlists, df_songs, min_songs_per_playlist=3):
+    playlist_songs_data = []
+    
+    for _, playlist in tqdm(df_playlists.iterrows(), total=len(df_playlists)):
+        n_songs = random.randint(min_songs_per_playlist, min(30, playlist['songs_number']))
+        n_songs = playlist['songs_number'] if n_songs > playlist['songs_number'] else n_songs
 
+        selected_songs = df_songs.sample(n=n_songs)
+        
+        for pos, (_, song) in enumerate(selected_songs.iterrows(), 1):
+            # Generar fecha de agregación posterior a la creación de la playlist
+            days_after_creation = random.randint(0, 365)
+            added_at = playlist['created_at'] + timedelta(days=days_after_creation)
+            
+            playlist_songs_data.append({
+                'playlist_name': f"{playlist['user_email']}#{playlist['playlist_name']}",
+                'song_title': f"{song['song_title']}",
+                'artist_name': song['artist_name'],
+                'song_duration': song['duration'],
+                'position': pos,
+                'added_at': added_at
+            })
+    
+    return pd.DataFrame(playlist_songs_data)
+
+df_playlist_songs = generate_playlist_songs(df_playlists, df_songs)
+display(df_playlist_songs)
+
+
+df_playlists['playlist_id'] = df_playlists.apply(lambda df: f"{df['user_email']}#{df['playlist_name']}", axis=1)
+df_playlists['total_time'] = df_playlists.merge(
+    df_playlist_songs.groupby('playlist_name', as_index=False)['song_duration'].sum(), 
+    left_on='playlist_id', right_on='playlist_name', how='left'
+).rename(columns={'song_duration': 'total_time'})['total_time']
+df_playlists = df_playlists.drop(columns=['playlist_id'])
 
 """
 UserReplays {
@@ -193,8 +277,51 @@ UserReplays {
     string GSI2 "GSI2: song_id | Para buscar reproducciones por canción"
 }
 """
-# TODO: Create user replays table
+def generate_user_replays(df_users, df_songs, n_replays=10000):
+    user_replays_data = []
+    
+    # Para cada usuario
+    for _, user in tqdm(df_users.iterrows(), total=len(df_users)):
+        # Generar un número aleatorio de reproducciones
+        n_user_replays = random.randint(10, 100)
+        
+        # Seleccionar canciones aleatorias para el usuario
+        user_songs = df_songs.sample(n=min(n_user_replays, len(df_songs)), replace=True)
+        
+        for _, song in user_songs.iterrows():
+            # Generar múltiples reproducciones por canción
+            n_song_replays = random.randint(1, 5)
+            
+            for _ in range(n_song_replays):
+                # Calcular una fecha de reproducción válida
+                days_after_creation = random.randint(0, (datetime.now() - user['created_at'].to_pydatetime()).days)
+                hours_after_creation = random.randint(0, 23)
+                minutes_after_creation = random.randint(0, 59)
+                seconds_after_creation = random.randint(0, 59)
 
+                replayed_at = user['created_at'] + timedelta(days=days_after_creation, hours=hours_after_creation, minutes=minutes_after_creation, seconds=seconds_after_creation)
+                
+                # Calcular duración de reproducción (entre 30% y 100% de la duración total)
+                replay_duration = int(song['duration'] * random.uniform(0.3, 1.0))
+                
+                song_id = f"{song['artist_name']}#{song['song_title']}"
+                
+                user_replays_data.append({
+                    'email': user['email'],
+                    'song_id': song_id,
+                    'replayed_at': replayed_at,
+                    'replay_duration': replay_duration
+                })
+    
+    df_user_replays = pd.DataFrame(user_replays_data)
+    
+    # Ordenar por fecha de reproducción
+    df_user_replays = df_user_replays.sort_values('replayed_at')
+    
+    # Limitar al número deseado de reproducciones
+    return df_user_replays.head(n_replays)
+
+df_user_replays = generate_user_replays(df_users, df_songs)
 
 """
 Artists ||--o{ Songs : "creates"
@@ -206,3 +333,21 @@ Songs ||--o{ PlaylistSongs : "appears_in"
 Users ||--o{ UserReplays : "replays"
 Songs ||--o{ UserReplays : "is_played_in"
 """
+
+display(df_artist)
+display(df_songs)
+display(df_albums)
+
+display(df_users)
+display(df_playlists)
+display(df_playlist_songs)
+display(df_user_replays)
+
+print(f"{df_artist.shape=}")
+print(f"{df_songs.shape=}")
+print(f"{df_albums.shape=}")
+
+print(f"{df_users.shape=}")
+print(f"{df_playlists.shape=}")
+print(f"{df_playlist_songs.shape=}")
+print(f"{df_user_replays.shape=}")
