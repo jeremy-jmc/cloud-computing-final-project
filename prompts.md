@@ -238,7 +238,8 @@ erDiagram
         bool public "Si la playlist es publica o privada"
         string wallpaper_s3 "S3 wallpaper path"
         timestamp created_at "Fecha de creación"
-        number LSI1  "Indice de popularidad"
+        number likes "Numero de likes"
+        number LSI1  "Indice de popularidad por likes"
     }
 
     Songs {

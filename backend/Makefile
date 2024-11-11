@@ -8,6 +8,3 @@ deploy-all:
 	serverless deploy --stage dev
 	serverless deploy --stage test
 	serverless deploy --stage prod
-rewrite-aws_credentials:
-	cp ./credentials ~/.aws/credentials
-# echo "$(AWS_CREDENTIALS)" > ~/.aws/credentials

@@ -1,0 +1,106 @@
+org: jeremymatos
+service: cloud-computing-final-project-databases
+
+# npm install --save-dev serverless-dynamodb-pitr
+plugins:
+  - serverless-dynamodb-pitr
+
+provider:
+  name: aws
+  iam:
+    role: arn:aws:iam::982830027345:role/LabRole
+  environment:
+    USERS_TABLE: ${sls:stage}-fp-t_users
+    ARTIST_TABLE: ${sls:stage}-fp-t_artists
+    PLAYLIST_TABLE: ${sls:stage}-fp-t_playlists
+
+resources:
+  Resources:
+  # Users Table
+    TablaUsuarios:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: user_name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+          - AttributeName: user_name
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
+  # Artist Table -> https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
+  # GSI: https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework
+    TablaArtistas:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ARTIST_TABLE}
+        AttributeDefinitions:
+          - AttributeName: artist_name
+            AttributeType: S
+          - AttributeName: popularity
+            AttributeType: N
+          - AttributeName: genres
+            AttributeType: S
+        KeySchema:
+          - AttributeName: artist_name
+            KeyType: HASH
+          - AttributeName: popularity
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: GSI-genres
+            KeySchema:
+              - AttributeName: genres
+                KeyType: HASH
+              - AttributeName: popularity
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+  # Playlist Table
+  # LSI: https://gist.github.com/DavidWells/c7df5df9c3e5039ee8c7c888aece2dd5
+    TablaPlaylists:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PLAYLIST_TABLE}
+        AttributeDefinitions:
+          - AttributeName: user_email
+            AttributeType: S
+          - AttributeName: playlist_name
+            AttributeType: S
+          - AttributeName: likes
+            AttributeType: N
+        KeySchema:
+          - AttributeName: user_email
+            KeyType: HASH
+          - AttributeName: playlist_name
+            KeyType: RANGE
+        LocalSecondaryIndexes:
+          - IndexName: LSI-popularity
+            KeySchema:
+            - AttributeName: user_email
+              KeyType: HASH
+            - AttributeName: likes
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL   # ! ServerlessError2: An error occurred: TablaArtistas - Resource handler returned message: "Cannot perform more than one GSI creation or deletion in a single update" (RequestToken: d59f46db-1e2e-87b3-4ea6-4630bf6298ee, HandlerErrorCode: InvalidRequest).
+        BillingMode: PAY_PER_REQUEST
+
+# * https://www.npmjs.com/package/serverless-dynamodb-pitr
+custom:
+  pitr:
+    - tableName: ${self:provider.environment.USERS_TABLE}
+      enabled: true
+    - tableName: ${self:provider.environment.ARTIST_TABLE}
+      enabled: false
+
+# BASE DE DATOS: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/code
+#   Usar minimo 1 GSI, LSI
+#   Implementar la funcionalidad "Copia de seguridad - Recuperacion en un momento dado (PITR)"
+#   DATOS DE PRUEBA: Minimo 10K registros x tabla repartidos entre 3 tenant_id distintos
+
+# ! https://stackoverflow.com/questions/67842407/aws-cannot-perform-more-than-one-gsi-creation-or-deletion-in-a-single-update
