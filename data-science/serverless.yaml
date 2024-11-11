@@ -175,7 +175,18 @@ custom:
     - tableName: ${self:provider.environment.USERS_TABLE}
       enabled: true
     - tableName: ${self:provider.environment.ARTIST_TABLE}
-      enabled: false
+      enabled: true
+      # enabled: false
+    - tableName: ${self:provider.environment.PLAYLIST_TABLE}
+      enabled: true
+    - tableName: ${self:provider.environment.SONGS_TABLE}
+      enabled: true
+    - tableName: ${self:provider.environment.ALBUMS_TABLE}
+      enabled: true
+    - tableName: ${self:provider.environment.PLAYLIST_SONGS_TABLE}
+      enabled: true
+    - tableName: ${self:provider.environment.USER_REPLAYS_TABLE}
+      enabled: true
 
 # BASE DE DATOS: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/code
 #   Usar minimo 1 GSI, LSI
