@@ -13,6 +13,10 @@ provider:
     USERS_TABLE: ${sls:stage}-fp-t_users
     ARTIST_TABLE: ${sls:stage}-fp-t_artists
     PLAYLIST_TABLE: ${sls:stage}-fp-t_playlists
+    SONGS_TABLE: ${sls:stage}-fp-t_songs
+    ALBUMS_TABLE: ${sls:stage}-fp-t_albums
+    PLAYLIST_SONGS_TABLE: ${sls:stage}-fp-t_playlist_songs
+    USER_REPLAYS_TABLE: ${sls:stage}-fp-t_user_replays
 
 resources:
   Resources:
@@ -88,6 +92,81 @@ resources:
               KeyType: RANGE
             Projection:
               ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+  # Songs Table
+    TablaSongs:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.SONGS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: song_title
+            AttributeType: S
+          - AttributeName: artist_name
+            AttributeType: S
+          - AttributeName: album_name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: artist_name
+            KeyType: HASH
+          - AttributeName: song_title
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: GSI-album
+            KeySchema:
+              - AttributeName: album_name
+                KeyType: HASH
+              - AttributeName: song_title
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+  # Albums Table
+    TablaAlbums:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ALBUMS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: album_name
+            AttributeType: S
+          - AttributeName: artist_name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: artist_name
+            KeyType: HASH
+          - AttributeName: album_name
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+  # PlaylistSongs Table
+    TablaPlaylistSongs:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PLAYLIST_SONGS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: playlist_name
+            AttributeType: S
+          - AttributeName: song_title
+            AttributeType: S
+        KeySchema:
+          - AttributeName: playlist_name
+            KeyType: HASH
+          - AttributeName: song_title
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+  # UserReplays Table
+    TablaUserReplays:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.USER_REPLAYS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: user_email
+            AttributeType: S
+          - AttributeName: song_title
+            AttributeType: S
+        KeySchema:
+          - AttributeName: user_email
+            KeyType: HASH
+          - AttributeName: song_title
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
 
 # * https://www.npmjs.com/package/serverless-dynamodb-pitr

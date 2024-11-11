@@ -37,8 +37,7 @@ print(df.columns)
 # df_individual.groupby(['artists', 'album_name']).size().reset_index(name='count').sort_values(by='count', ascending=False)
 
 
-"""
-Artists {
+"""Artists {
     string email PK "Primary Key - Email único del artista"
     string artist_name "Sort Key - Nombre del artista"
     array genres "Array de géneros musicales"
@@ -68,9 +67,8 @@ display(df_artist)
 print(df_artist.dtypes)
 
 
-"""
-Songs {
-    string artist_id PK "Partition Key | ID del artista | Nombre o email"
+"""Songs {
+    string artist_name PK "Partition Key | ID del artista | Nombre o email"
     string song_title "Sort Key | Titulo de la cancion"
     string album_name "Nombre del album"
     number duration "Duración en segundos"
@@ -103,8 +101,7 @@ df_songs = df_songs.sort_values(by=['album_name', 'rank'])
 display(df_songs)
 
 
-"""
-Users {
+"""Users {
     string email PK "Partition Key | Email del usuario"
     string user_name "Sort Key | Profile name"
     string name "Nombre completo"
@@ -115,6 +112,7 @@ Users {
     string GSI2 "GSI2: created_at | Para búsquedas por fecha de creación"
 }
 """
+
 users_dataset_path = kagglehub.dataset_download("arindamsahoo/social-media-users")
 
 df_users = (
@@ -136,8 +134,7 @@ df_users = df_users[['email', 'user_name', 'name', 'age', 'password', 'created_a
 display(df_users)
 # df_users['bcrypt_password'] = df_users['password'].apply(lambda x: bcrypt.hashpw(x.encode(), bcrypt.gensalt()).decode())
 
-"""
-Playlists {
+"""Playlists {
     string user_email PK "Partition Key | Users.email"
     string playlist_name "Sort Key | Nombre de la playlist"
     string descripcion "Descripcion de la playlist"
@@ -149,6 +146,7 @@ Playlists {
     number LSI1  "Indice de popularidad"
 }
 """
+
 def generate_playlists(df_users, n_playlists=15000):
     user_emails = df_users['email'].tolist()
     
@@ -184,7 +182,7 @@ def generate_playlists(df_users, n_playlists=15000):
     # df_playlists['total_time'] = -1
     df_playlists['wallpaper_s3'] = [f"s3://playlists/{uuid.uuid4().hex}.jpg" for _ in range(len(df_playlists))]
     # df_playlists['created_at'] = np.nan
-    
+    df_playlists['likes'] = np.random.randint(0, 1000, size=len(df_playlists))
     return df_playlists
 
 df_playlists = (
@@ -197,7 +195,7 @@ display(df_playlists)
 
 """
 Albums {
-    string artist_id PK "Partition Key | ID del artista | Nombre o email"
+    string artist_name PK "Partition Key | ID del artista | Nombre o email"
     string album_title "Sort Key | Titulo del album"
     string release_date "Fecha de lanzamiento"
 }
@@ -226,7 +224,7 @@ display(df_albums)
 """
 PlaylistSongs {
     string playlist_name PK "Partition Key | Nombre de la playlist"
-    string song_name "Sort Key | Nombre de la cancion"
+    string song_title "Sort Key | Nombre de la cancion"
     number position "Posición en la playlist"
     timestamp added_at "Fecha de agregación"
 }
