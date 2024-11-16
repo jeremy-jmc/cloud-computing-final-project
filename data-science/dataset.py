@@ -279,37 +279,68 @@ def generate_user_replays(df_users, df_songs, n_replays=10000):
     user_replays_data = []
     
     # Para cada usuario
-    for _, user in tqdm(df_users.iterrows(), total=len(df_users)):
-        # Generar un número aleatorio de reproducciones
-        n_user_replays = random.randint(10, 100)
-        
-        # Seleccionar canciones aleatorias para el usuario
-        user_songs = df_songs.sample(n=min(n_user_replays, len(df_songs)), replace=True)
-        
-        for _, song in user_songs.iterrows():
-            # Generar múltiples reproducciones por canción
-            n_song_replays = random.randint(1, 5)
+    for idx, user in tqdm(df_users.iterrows(), total=len(df_users)):
+        try:
+            # Generar un número aleatorio de reproducciones
+            n_user_replays = random.randint(10, 100)
             
-            for _ in range(n_song_replays):
-                # Calcular una fecha de reproducción válida
-                days_after_creation = random.randint(0, (datetime.now() - user['created_at'].to_pydatetime()).days)
-                hours_after_creation = random.randint(0, 23)
-                minutes_after_creation = random.randint(0, 59)
-                seconds_after_creation = random.randint(0, 59)
+            # Seleccionar canciones aleatorias para el usuario
+            user_songs = df_songs.sample(n=min(n_user_replays, len(df_songs)), replace=True)
+            
+            for _, song in user_songs.iterrows():
+                # Generar múltiples reproducciones por canción
+                n_song_replays = random.randint(1, 5)
+                
+                for _ in range(n_song_replays):
+                    # Ensure created_at is a datetime object
+                    if isinstance(user['created_at'], pd.Timestamp):
+                        created_at = user['created_at'].to_pydatetime()
+                    else:
+                        created_at = user['created_at']
+                    
+                    # Calculate days between creation and now
+                    days_diff = (datetime.now() - created_at).days
+                    if days_diff <= 0:
+                        continue
+                        
+                    # Calculate replay date
+                    days_after_creation = random.randint(0, days_diff)
+                    hours_after_creation = random.randint(0, 23)
+                    minutes_after_creation = random.randint(0, 59)
+                    seconds_after_creation = random.randint(0, 59)
 
-                replayed_at = user['created_at'] + timedelta(days=days_after_creation, hours=hours_after_creation, minutes=minutes_after_creation, seconds=seconds_after_creation)
+                    replayed_at = created_at + timedelta(
+                        days=days_after_creation,
+                        hours=hours_after_creation,
+                        minutes=minutes_after_creation,
+                        seconds=seconds_after_creation
+                    )
+                    
+                    # Calcular duración de reproducción (entre 30% y 100% de la duración total)
+                    replay_duration = int(song['duration'] * random.uniform(0.3, 1.0))
+                    
+                    user_replays_data.append({
+                        'email': user['email'],
+                        'user_email': user['email'],  # Adding this for consistency
+                        'song_id': f"{song['artist_name']}#{song['song_title']}",
+                        'song_title': song['song_title'],  # Adding this for the table schema
+                        'replayed_at': replayed_at,
+                        'replay_duration': replay_duration
+                    })
+                    
+                    # Break if we've reached our target
+                    if len(user_replays_data) >= n_replays:
+                        break
+                        
+                if len(user_replays_data) >= n_replays:
+                    break
+                    
+            if len(user_replays_data) >= n_replays:
+                break
                 
-                # Calcular duración de reproducción (entre 30% y 100% de la duración total)
-                replay_duration = int(song['duration'] * random.uniform(0.3, 1.0))
-                
-                song_id = f"{song['artist_name']}#{song['song_title']}"
-                
-                user_replays_data.append({
-                    'email': user['email'],
-                    'song_id': song_id,
-                    'replayed_at': replayed_at,
-                    'replay_duration': replay_duration
-                })
+        except Exception as e:
+            print(f"Error processing user {idx}: {str(e)}")
+            continue
     
     df_user_replays = pd.DataFrame(user_replays_data)
     
