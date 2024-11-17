@@ -44,25 +44,27 @@ print(type(dynamodb))
 # boto3.resources.factory.dynamodb.Table
 
 for table_name, df in tables.items():
-    print(f'Inserting data into {table_name}')
+    # print(f'Inserting data into {table_name}')
     
     table = dynamodb.Table(table_name)
-    print(type(table))
-    with table.batch_writer() as batch:
-        for i, row in tqdm(df.iterrows(), total=df.shape[0]):
-            item = {
-                k: (Decimal(str(v)) if isinstance(v, float) else v.tolist() if isinstance(v, np.ndarray) else v) 
-                for k, v in row.to_dict().items()
-            }
+    # print(type(table))
+    print(table_name)
+    print(list(df.columns))
+    # with table.batch_writer() as batch:
+    #     for i, row in tqdm(df.iterrows(), total=df.shape[0]):
+    #         item = {
+    #             k: (Decimal(str(v)) if isinstance(v, float) else v.tolist() if isinstance(v, np.ndarray) else v) 
+    #             for k, v in row.to_dict().items()
+    #         }
             
-            # print(item)
-            try:
-                batch.put_item(Item=item)
-            except Exception as e:
-                print(f'Error inserting row {i} into {table_name}')
-                print(e)
-                break
-    print(f'Data inserted into {table_name}')
+    #         # print(item)
+    #         try:
+    #             batch.put_item(Item=item)
+    #         except Exception as e:
+    #             print(f'Error inserting row {i} into {table_name}')
+    #             print(e)
+    #             break
+    # print(f'Data inserted into {table_name}')
 
 """
 https://stackoverflow.com/questions/72007977/batchputitem-vs-putitem-in-dynamodb
