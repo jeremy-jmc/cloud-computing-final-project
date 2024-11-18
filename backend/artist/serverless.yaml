@@ -1,5 +1,5 @@
 org: jeremymatos
-service: api-artist
+service: fp-api-artist
 
 provider:
   name: aws
