@@ -2,6 +2,7 @@ import boto3
 import hashlib
 import uuid # Genera valores únicos
 from datetime import datetime, timedelta
+import os
 
 # Hashear contraseña
 def hash_password(password):
@@ -15,7 +16,7 @@ def lambda_handler(event, context):
     hashed_password = hash_password(password)
     # Proceso
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('t_usuarios')
+    table = dynamodb.Table(os.environ.get('USERS_TABLE'))
     response = table.get_item(
         Key={
             'user_id': user_id

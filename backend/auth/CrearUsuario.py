@@ -1,16 +1,13 @@
 import boto3
 import hashlib
+import os
 
 # Hashear contraseña
-
-
 def hash_password(password):
     # Retorna la contraseña hasheada
     return hashlib.sha256(password.encode()).hexdigest()
 
 # Función que maneja el registro de user y validación del password
-
-
 def lambda_handler(event, context):
     try:
         # Obtener el email y el password
@@ -23,7 +20,7 @@ def lambda_handler(event, context):
             hashed_password = hash_password(password)
             # Conectar DynamoDB
             dynamodb = boto3.resource('dynamodb')
-            t_usuarios = dynamodb.Table('t_usuarios')
+            t_usuarios = dynamodb.Table(os.environ.get('USERS_TABLE'))
             # Almacena los datos del user en la tabla de usuarios en DynamoDB
             t_usuarios.put_item(
                 Item={

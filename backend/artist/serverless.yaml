@@ -14,7 +14,7 @@ provider:
     # AWS_REGION: us-east-1
 
 functions:
-  get_artists:
+  GetArtists:
     handler: index.handler
     memorySize: 512
     package:
