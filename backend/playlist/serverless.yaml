@@ -1,0 +1,32 @@
+org: jeremymatos
+service: fp-api-playlist
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 30
+  iam:
+    role: arn:aws:iam::982830027345:role/LabRole
+  environment:
+    PLAYLIST_TABLE: ${sls:stage}-fp-t_playlists
+    PLAYLIST_SONGS_TABLE: ${sls:stage}-fp-t_playlist_songs
+
+functions:
+  CreatePlaylist:
+    handler: CreatePlaylist.lambda_handler
+    events:
+      - http:
+          path: /playlist/create
+          method: post
+          cors: true
+          integration: lambda
+
+  AddSongToPlaylist:
+    handler: AddSongToPlaylist.lambda_handler
+    events:
+      - http:
+          path: /playlist/add-song
+          method: put
+          cors: true
+          integration: lambda
