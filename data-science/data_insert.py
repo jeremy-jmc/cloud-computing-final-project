@@ -10,6 +10,11 @@ from decimal import Decimal
 stage = 'dev'
 
 tables = {
+    f'{stage}-fp-t_users': pd.read_parquet('./data/users.parquet').assign(
+        created_at=lambda x: x['created_at'].astype(str)
+    ).drop_duplicates(
+        subset=['email', 'user_name'], keep='first'
+    ),
     f'{stage}-fp-t_albums': pd.read_parquet('./data/albums.parquet').rename(columns={'album_title': 'album_name'}),
     f'{stage}-fp-t_artists': pd.read_parquet('./data/artist.parquet').assign(
         created_at=lambda x: x['created_at'].astype(str),
@@ -29,11 +34,6 @@ tables = {
     ).drop_duplicates(
         subset=['user_email', 'song_title']
     ),
-    f'{stage}-fp-t_users': pd.read_parquet('./data/users.parquet').assign(
-        created_at=lambda x: x['created_at'].astype(str)
-    ).drop_duplicates(
-        subset=['email', 'user_name'], keep='first'
-    ),
 }
 
 # print(tables.keys())
@@ -50,21 +50,22 @@ for table_name, df in tables.items():
     # print(type(table))
     print(table_name)
     print(list(df.columns))
-    # with table.batch_writer() as batch:
-    #     for i, row in tqdm(df.iterrows(), total=df.shape[0]):
-    #         item = {
-    #             k: (Decimal(str(v)) if isinstance(v, float) else v.tolist() if isinstance(v, np.ndarray) else v) 
-    #             for k, v in row.to_dict().items()
-    #         }
+    with table.batch_writer() as batch:
+        for i, row in tqdm(df.iterrows(), total=df.shape[0]):
+            item = {
+                k: (Decimal(str(v)) if isinstance(v, float) else v.tolist() if isinstance(v, np.ndarray) else v) 
+                for k, v in row.to_dict().items()
+            }
             
-    #         # print(item)
-    #         try:
-    #             batch.put_item(Item=item)
-    #         except Exception as e:
-    #             print(f'Error inserting row {i} into {table_name}')
-    #             print(e)
-    #             break
-    # print(f'Data inserted into {table_name}')
+            # print(item)
+            try:
+                batch.put_item(Item=item)
+            except Exception as e:
+                print(f'Error inserting row {i} into {table_name}')
+                print(e)
+                break
+    print(f'Data inserted into {table_name}')
+    break
 
 """
 https://stackoverflow.com/questions/72007977/batchputitem-vs-putitem-in-dynamodb

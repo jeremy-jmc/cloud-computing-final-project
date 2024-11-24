@@ -3,6 +3,10 @@ import hashlib
 import uuid # Genera valores únicos
 from datetime import datetime, timedelta
 import os
+import json
+
+# os.environ['AWS_REGION'] = 'us-east-1'
+# os.environ['USERS_TABLE'] = 'dev-fp-t_users'
 
 # Hashear contraseña
 def hash_password(password):
@@ -11,17 +15,21 @@ def hash_password(password):
 
 def lambda_handler(event, context):
     # Entrada (json)
-    user_id = event['user_id']
-    password = event['password']
-    hashed_password = hash_password(password)
+    email = event['body']['email']
+    password = event['body']['password']
+    # TODO: hashed DB passwords
+    hashed_password = password  # hash_password(password)
     # Proceso
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb', region_name=os.environ.get('AWS_REGION'))
     table = dynamodb.Table(os.environ.get('USERS_TABLE'))
+
+    print(table)
     response = table.get_item(
         Key={
-            'user_id': user_id
+            'email': email
         }
     )
+
     if 'Item' not in response:
         return {
             'statusCode': 403,
@@ -50,3 +58,13 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'token': token
     }
+
+# lambda_handler(
+#     {
+#         'body': {
+#             'email': 'geraldine_austin@gmail.com',
+#             'password': '1234'
+#         }
+#     },
+#     {}
+# )

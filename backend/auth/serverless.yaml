@@ -15,7 +15,7 @@ provider:
 
 functions:
   LoginUsuario:
-    handler: LoginUsuario.handler
+    handler: LoginUsuario.lambda_handler
     events:
       - http:
           path: /auth/login
@@ -27,7 +27,7 @@ functions:
           #     headers:
           #       'Content-Type': true
   CrearUsuario:
-    handler: CrearUsuario.handler
+    handler: CrearUsuario.lambda_handler
     events:
       - http:
           path: /auth/signup

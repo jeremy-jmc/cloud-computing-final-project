@@ -28,13 +28,13 @@ resources:
         AttributeDefinitions:
           - AttributeName: email
             AttributeType: S
-          - AttributeName: user_name
-            AttributeType: S
+          # - AttributeName: user_name
+          #   AttributeType: S
         KeySchema:
           - AttributeName: email
             KeyType: HASH
-          - AttributeName: user_name
-            KeyType: RANGE
+          # - AttributeName: user_name
+          #   KeyType: RANGE
         # Set the capacity to auto-scale
         BillingMode: PAY_PER_REQUEST
   # Artist Table -> https://stackoverflow.com/questions/57322645/how-to-define-dynamodb-table-with-global-secondary-index-in-serverless-framework

@@ -2,7 +2,7 @@
 
 ## 1. API Usuarios (Python)
 
-### 1.1 POST /auth/register
+### 1.1 POST /auth/signup
 Registro de nuevos usuarios en el sistema.
 
 **Request:**
