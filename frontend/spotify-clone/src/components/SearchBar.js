@@ -37,6 +37,7 @@ function SearchBar({ token }) {
 
             setSongs(songsData['body']['songs']);
             setArtists(artistsData);
+            setError(null);
         } catch (err) {
             setError('Search failed. Please try again.');
         }
