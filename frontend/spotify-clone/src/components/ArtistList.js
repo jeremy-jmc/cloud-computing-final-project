@@ -8,7 +8,7 @@ function ArtistList({ artists }) {
             <h2>Artists</h2>
             <ul>
                 {artists.map((artist) => (
-                    <li key={artist.id}>{artist.name}</li>
+                    <li key={artist.artist_name}>{artist.artist_name}</li>
                 ))}
             </ul>
         </div>

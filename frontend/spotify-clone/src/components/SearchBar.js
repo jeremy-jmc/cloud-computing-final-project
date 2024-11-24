@@ -11,13 +11,31 @@ function SearchBar({ token }) {
     const handleSearch = async () => {
         try {
             const [songRes, artistRes] = await Promise.all([
-                fetch(`/songs?name=${query}`, { headers: { Authorization: `Bearer ${token}` } }),
-                fetch(`/artists?name=${query}`, { headers: { Authorization: `Bearer ${token}` } }),
+                fetch(process.env.REACT_APP_ENDPOINT_SONGS, { 
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({
+                        title: query
+                    })
+                }),
+                fetch(process.env.REACT_APP_ENDPOINT_ARTISTS, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ artist_name: query })
+                }),
             ]);
             const songsData = await songRes.json();
-            const artistsData = await artistRes.json();
+            console.log(songsData);
+            const artistsData = [];
+            // const artistsData = await artistRes.json();
 
-            setSongs(songsData);
+            setSongs(songsData['body']['songs']);
             setArtists(artistsData);
         } catch (err) {
             setError('Search failed. Please try again.');
