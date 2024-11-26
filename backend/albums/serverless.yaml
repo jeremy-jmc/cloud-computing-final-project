@@ -1,0 +1,28 @@
+org: jeremymatos
+service: fp-api-albums
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  memorySize: 256
+  timeout: 30
+  iam:
+    role: arn:aws:iam::982830027345:role/LabRole
+  environment:
+    ALBUMS_TABLE: ${sls:stage}-fp-t_albums
+    # AWS_REGION: us-east-1
+
+functions:
+  GetArtists:
+    handler: index.handler
+    memorySize: 512
+    package:
+      include:
+        - ./**  # Incluir todo el contenido del directorio
+    events:
+      - http:
+          path: /artists
+          method: post
+          cors: true
+          integration: lambda

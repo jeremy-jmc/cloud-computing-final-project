@@ -136,6 +136,13 @@ resources:
           - AttributeName: album_name
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+        - IndexName: album_name-index
+          KeySchema:
+            - AttributeName: album_name
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
   # PlaylistSongs Table
     TablaPlaylistSongs:
       Type: AWS::DynamoDB::Table
