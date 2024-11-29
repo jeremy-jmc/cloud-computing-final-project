@@ -8,3 +8,6 @@ deploy-all:
 	serverless deploy --stage dev
 	serverless deploy --stage test
 	serverless deploy --stage prod
+set_credentials:
+	rm ~/.aws/credentials
+	nano ~/.aws/credentials

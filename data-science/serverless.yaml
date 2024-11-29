@@ -169,11 +169,22 @@ resources:
             AttributeType: S
           - AttributeName: song_title
             AttributeType: S
+          - AttributeName: replayed_at
+            AttributeType: S
         KeySchema:
           - AttributeName: user_email
             KeyType: HASH
           - AttributeName: song_title
             KeyType: RANGE
+        LocalSecondaryIndexes:
+          - IndexName: LSI-replayed_at
+            KeySchema:
+            - AttributeName: user_email
+              KeyType: HASH
+            - AttributeName: replayed_at
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
 # * https://www.npmjs.com/package/serverless-dynamodb-pitr
