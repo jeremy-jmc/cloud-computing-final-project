@@ -119,16 +119,17 @@ function SearchBar({ token }) {
     };
 
     return (
-        <div style={{ display: 'flex', height: '100%', width: '100%' }}>
-            <div style={{ width: '250px', backgroundColor: '#1DB954', padding: '20px', color: '#fff' }}>
+        <div style={{ display: 'flex', minHeight: '100vh', width: '100%', background: 'linear-gradient(180deg, #121212 0%, #282828 100%)' }}>
+            <div style={{ width: '250px', background: 'linear-gradient(180deg, #1DB954 0%, #1ED760 100%)', padding: '20px', color: '#fff', minHeight: '100vh' }}>
                 <h2>Playlists</h2>
                 <PlaylistList playlists={playlists} onSelectPlaylist={handleSelectPlaylist} fetchPlaylists={fetchPlaylists} />
+                {/* Move the button inside PlaylistList */}
             </div>
-            <div style={{ flex: 1, padding: '20px' }}>
+            <div style={{ flex: 1, padding: '20px', backgroundColor: '#121212', color: '#fff' }}>
                 {selectedPlaylist ? (
                     <div>
                         <h2>{selectedPlaylist} Songs</h2>
-                        <button onClick={handleBackToSearch} style={{ padding: '10px 20px', borderRadius: '5px', marginBottom: '20px' }}>
+                        <button onClick={handleBackToSearch} style={{ padding: '10px 20px', borderRadius: '5px', marginBottom: '20px', backgroundColor: '#1DB954', color: '#fff' }}>
                             Back to Search
                         </button>
                         <SongList songs={songs} />
@@ -142,26 +143,26 @@ function SearchBar({ token }) {
                                 placeholder="Search for songs, albums, or artists"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                style={{ padding: '10px', margin: '10px', borderRadius: '5px', width: '50%' }}
+                                style={{ padding: '10px', margin: '10px', borderRadius: '5px', width: '50%', backgroundColor: '#282828', color: '#fff', border: 'none' }}
                             />
-                            <button onClick={handleSearch} style={{ padding: '10px 20px', borderRadius: '5px', marginTop: '10px' }}>
+                            <button onClick={handleSearch} style={{ padding: '10px 20px', borderRadius: '5px', marginTop: '10px', backgroundColor: '#1DB954', color: '#fff' }}>
                                 Search
                             </button>
                             {error && <p style={{ color: 'red' }}>{error}</p>}
                         </div>
                         <div>
-                        <h2>Recommendations Top 5</h2>
-                            <SongList songs={recommendations.map(rec => ({
-                                song_title: rec.song_title,
-                                artist_name: rec.artist_name,
-                                duration: rec.total_minutes * 60 // Convert minutes to seconds
-                            }))} />
                             <h2>Songs</h2>
                             <SongList songs={songs} />
                             <h2>Artists</h2>
                             <ArtistList artists={artists} />
                             <h2>Albums</h2>
                             <AlbumList albums={albums} />
+                            <h2>Recommendations Top 5</h2>
+                            <SongList songs={recommendations.map(rec => ({
+                                song_title: rec.song_title,
+                                artist_name: rec.artist_name,
+                                duration: rec.total_minutes * 60 // Convert minutes to seconds
+                            }))} />
                         </div>
                     </div>
                 )}

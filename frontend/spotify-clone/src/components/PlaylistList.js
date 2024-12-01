@@ -35,7 +35,7 @@ function PlaylistList({ playlists, onSelectPlaylist, fetchPlaylists }) {
     };
 
     if (playlists == null || playlists.length === 0) {
-        return <p style={{ color: '#fff', textAlign: 'center' }}>No playlists available</p>;
+        return <p style={{ color: '#fff', textAlign: 'center' }}>No playlists found</p>;
     }
 
     const handleSelectPlaylist = (playlistName) => {
@@ -158,7 +158,7 @@ const songsNumberStyle = {
 const createButtonStyle = {
     padding: '10px',
     margin: '10px 0',
-    backgroundColor: '#AFAFFA',
+    backgroundColor: '#333', // Gray color
     color: '#fff',
     border: 'none',
     borderRadius: '5px',
@@ -180,11 +180,12 @@ const floatingMenuStyle = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    backgroundColor: 'rgba(0, 0, 255, 0.8)', // Changed to blue with rgba
+    backgroundColor: '#282828', // Dark background color
     padding: '20px',
     borderRadius: '10px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
     zIndex: 1000,
+    color: '#fff', // White text color
 };
 
 export default PlaylistList;

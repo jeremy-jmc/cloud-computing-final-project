@@ -2,7 +2,7 @@ import React from 'react';
 
 function AlbumList({ albums }) {
     if (albums == null || albums.length === 0) {
-        return <p style={{ color: '#fff', textAlign: 'center' }}>No albums available</p>;
+        return <p style={{ color: '#fff', textAlign: 'center' }}>No albums found</p>;
     }
 
     return (

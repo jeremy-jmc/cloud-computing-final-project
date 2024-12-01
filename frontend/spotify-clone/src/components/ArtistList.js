@@ -2,7 +2,7 @@ import React from 'react';
 
 function ArtistList({ artists }) {
     if (artists == null || artists.length === 0) {
-        return <p style={{ color: '#fff', textAlign: 'center' }}>No artists available</p>;
+        return <p style={{ color: '#fff', textAlign: 'center' }}>No artists found</p>;
     }
 
     return (

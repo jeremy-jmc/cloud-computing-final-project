@@ -50,7 +50,7 @@ function SongList({ songs }) {
     };
 
     if (songs == null || songs.length === 0) {
-        return <p style={{ color: '#fff', textAlign: 'center' }}>No songs available</p>;
+        return <p style={{ color: '#fff', textAlign: 'center' }}>No songs found</p>;
     }
 
     return (
@@ -79,20 +79,24 @@ function SongList({ songs }) {
             ))}
             {showPlaylistSelector && (
                 <div style={modalStyle}>
-                    <h3>Select Playlist</h3>
-                    <ul>
+                    <h3>Select Playlist to Add Music</h3>
+                    <div>
                         {playlists.map((playlist) => (
-                            <li key={playlist.playlist_name}>
-                                <button onClick={() => {
+                            <button
+                                key={playlist.playlist_name}
+                                style={playlistButtonStyle}
+                                onClick={() => {
                                     addSongToPlaylist(playlist.playlist_name);
                                     setShowPlaylistSelector(false);
-                                }}>
-                                    {playlist.playlist_name}
-                                </button>
-                            </li>
+                                }}
+                                onMouseOver={(e) => e.target.style.backgroundColor = '#14833b'}
+                                onMouseOut={(e) => e.target.style.backgroundColor = '#1DB954'}
+                            >
+                                {playlist.playlist_name}
+                            </button>
                         ))}
-                    </ul>
-                    <button onClick={() => setShowPlaylistSelector(false)}>Close</button>
+                    </div>
+                    <button style={closeButtonStyle} onClick={() => setShowPlaylistSelector(false)}>Close</button>
                 </div>
             )}
         </div>
@@ -113,6 +117,7 @@ const cardStyle = {
 
 const buttonStyle = {
     marginTop: '10px',
+    marginRight: '5px',
     padding: '10px',
     backgroundColor: '#1DB954',
     color: '#fff',
@@ -126,11 +131,37 @@ const modalStyle = {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    backgroundColor: '#fff',
+    backgroundColor: '#282828',
+    color: '#fff',
     padding: '20px',
     borderRadius: '10px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
     zIndex: 1000,
+    textAlign: 'center',
+    width: '300px', // Make it proportional
+};
+
+const playlistButtonStyle = {
+    marginTop: '10px',
+    padding: '10px',
+    backgroundColor: '#1DB954',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    width: '100%', // Make buttons full width
+    transition: 'background-color 0.3s', // Add animation
+};
+
+const closeButtonStyle = {
+    marginTop: '10px',
+    padding: '10px',
+    backgroundColor: '#ff4d4d',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    width: '100%', // Make button full width
 };
 
 export default SongList;
