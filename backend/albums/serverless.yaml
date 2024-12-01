@@ -14,7 +14,7 @@ provider:
     # AWS_REGION: us-east-1
 
 functions:
-  GetArtists:
+  GetAlbums:
     handler: index.handler
     memorySize: 512
     package:
@@ -22,7 +22,7 @@ functions:
         - ./**  # Incluir todo el contenido del directorio
     events:
       - http:
-          path: /artists
+          path: /albums
           method: post
           cors: true
           integration: lambda

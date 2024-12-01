@@ -4,68 +4,55 @@ AWS.config.update({ region: process.env.AWS_REGION });
 var ddb = new AWS.DynamoDB({ apiVersion: '2012-08-10' });
 const TABLE_NAME = process.env.ARTIST_TABLE;
 
-/*
-Although it seems that this endpoint allows you to search by any field, it can only do so by artist_name
-*/
-
 export const handler = async (event) => {
+    let json_request;
+    try {
+        json_request = event.body;
+    } catch (error) {
+        return {
+            statusCode: 400,
+            body: {
+                message: "El cuerpo de la solicitud debe ser un JSON válido.",
+                error: error.message
+            }
+        };
+    }
+
+    if (!json_request.artist_name) {
+        return {
+            statusCode: 400,
+            body: {
+                message: "'artist_name' es obligatorio para realizar la consulta."
+            }
+        };
+    }
+
     var params = {
         TableName: TABLE_NAME,
-        KeyConditionExpression: "",
+        FilterExpression: "begins_with(artist_name, :artist_name)",
         ExpressionAttributeValues: {
+            ":artist_name": { S: json_request.artist_name }
         }
     };
-    let json_request = event.body;
-    let artist_colnames = ['artist_name', 'genres', 'subgenres', 'popularity', 'created_at'];
-    let artist_colname_types = ['S', 'S', 'L', 'N', 'S'];
-    artist_colnames.forEach((colname, index) => {
-        const col_type = artist_colname_types[index];
 
-        if (json_request.hasOwnProperty(colname)) {
-            params.KeyConditionExpression += `${colname} = :${colname} AND `;
-            if (col_type == 'N') {
-                params.ExpressionAttributeValues[`:${colname}`] = { N: json_request[colname] };
-            } else if (col_type == 'S') {
-                params.ExpressionAttributeValues[`:${colname}`] = { S: json_request[colname] };
-            }
-        }
-    });
-    params.KeyConditionExpression = params.KeyConditionExpression.slice(0, -5);
-
-    let response_records = [];
     try {
-        const data = await ddb.query(params).promise();
-        response_records = data.Items;
+        const data = await ddb.scan(params).promise();
+
+        const plainItems = data.Items.map(AWS.DynamoDB.Converter.unmarshall);
+        plainItems.sort((a, b) => b.popularity - a.popularity);
+
+
+        return {
+            statusCode: 200,
+            body: plainItems.slice(0, 10)
+        };
     } catch (err) {
         return {
             statusCode: 500,
             body: {
-                message: 'Error querying DynamoDB',
-                error: err
+                message: "Error al consultar DynamoDB",
+                error: err.message
             }
-        }
+        };
     }
-
-    const response = {
-        statusCode: 200,
-        body: {
-            event: event,
-            message: 'Hello from Lambda!',
-            region: AWS.config.region,
-            artistTable: process.env.ARTIST_TABLE,
-            params: params,
-            response: response_records
-        }
-    };
-    return response;
 };
-
-// https://docs.aws.amazon.com/es_es/sdk-for-javascript/v2/developer-guide/dynamodb-example-table-read-write-batch.html
-// TODO: https://stackoverflow.com/questions/31889891/validationexception-the-provided-key-element-does-not-match-the-schema
-
-/**
- * Sample JSON request:
- * {
- *      "artist_name": "The Beatles"
- * }
- */
