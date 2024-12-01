@@ -41,7 +41,7 @@ export const handler = async (event) => {
         console.error(error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: "Error al procesar la solicitud", error: error.message }),
+            body: { message: "Error al procesar la solicitud", error: error.message },
         };
     }
 };

@@ -30,7 +30,7 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({'message': 'Canción agregada a la playlist'})
+        'body': {'message': 'Canción agregada a la playlist'}
     }
 
 # lambda_handler({
