@@ -16,46 +16,30 @@ function SearchBar({ token }) {
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
-                console.log(sessionStorage);
-                console.log(sessionStorage.getItem('user_email'));
                 const response = await fetch(process.env.REACT_APP_ENDPOINT_PLAYLISTS, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify({ user_email: sessionStorage.getItem('user_email') })
                 });
                 const data = await response.json();
-                console.log(data);
                 setPlaylists(data.body);
             } catch (err) {
-                console.log(err);
                 setError('Failed to fetch playlists');
             }
         };
 
         fetchPlaylists();
     }, [token]);
-    /**
-     * REACT_APP_ENDPOINT_LOGIN
-     * REACT_APP_ENDPOINT_SIGNUP
-     * REACT_APP_ENDPOINT_SONGS
-     * REACT_APP_ENDPOINT_ARTISTS
-     * REACT_APP_ENDPOINT_CREATE_PLAYLIST
-     * REACT_APP_ENDPOINT_ADD_SONG
-     */
-    const handleSearch = async () => {
-        console.log('Handle search!');
 
+    const handleSearch = async () => {
         try {
-            // 
             const [songRes, artistRes, albumRes] = await Promise.all([
                 fetch(process.env.REACT_APP_ENDPOINT_SONGS, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify({ title: query })
                 }),
@@ -63,7 +47,6 @@ function SearchBar({ token }) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify({ artist_name: query })
                 }),
@@ -71,7 +54,6 @@ function SearchBar({ token }) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Authorization: `Bearer ${token}`
                     },
                     body: JSON.stringify({ search: query })
                 })
@@ -80,22 +62,14 @@ function SearchBar({ token }) {
             const songsData = await songRes.json();
             const artistsData = await artistRes.json();
             const albumsData = await albumRes.json();
-            
-            console.log(songsData.body.songs);
-            console.log(artistsData);
-            console.log(albumsData);
 
-            let songs_data = songsData.body.songs;
-            songs_data.sort((a, b) => b.popularity - a.popularity);
-
-            setSongs(songs_data.slice(0, 5));
+            setSongs(songsData.body.songs.slice(0, 5));
             setArtists(artistsData.body.slice(0, 5));
             setAlbums(albumsData.body);
         } catch (err) {
             setError('Something went wrong.');
         }
     };
-
 
     const handleSelectPlaylist = async (playlistName) => {
         try {
@@ -110,12 +84,19 @@ function SearchBar({ token }) {
                 })
             });
             const data = await response.json();
-            console.log(data);
+            console.log(data)
             setSongs(data.body);
             setSelectedPlaylist(playlistName);
         } catch (err) {
             setError('Failed to fetch playlist songs');
         }
+    };
+
+    const handleBackToSearch = () => {
+        setSelectedPlaylist(null);
+        setSongs([]);
+        setArtists([]);
+        setAlbums([]);
     };
 
     return (
@@ -128,6 +109,9 @@ function SearchBar({ token }) {
                 {selectedPlaylist ? (
                     <div>
                         <h2>{selectedPlaylist} Songs</h2>
+                        <button onClick={handleBackToSearch} style={{ padding: '10px 20px', borderRadius: '5px', marginBottom: '20px' }}>
+                            Back to Search
+                        </button>
                         <SongList songs={songs} />
                     </div>
                 ) : (
