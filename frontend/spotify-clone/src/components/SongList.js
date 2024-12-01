@@ -10,7 +10,8 @@ function SongList({ songs }) {
             {songs.map((song) => (
                 <div key={song.song_title} style={cardStyle}>
                     <h3>{song.song_title}</h3>
-                    <p>{song.album_name}</p>
+                    <p>{song.album_name || song.artist_name}</p>
+                    <p>{Math.floor((song.duration || song.song_duration) / 60)}:{('0' + ((song.duration || song.song_duration) % 60)).slice(-2)}</p>
                     <button
                         style={buttonStyle}
                         onClick={() => console.log(`Playing ${song.song_title}`)}

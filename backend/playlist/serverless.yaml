@@ -39,3 +39,12 @@ functions:
           method: post
           cors: true
           integration: lambda
+
+  GetPlaylistSongs:
+    handler: GetPlaylistSongs.lambda_handler
+    events:
+      - http:
+          path: /playlist/get-songs
+          method: post
+          cors: true
+          integration: lambda

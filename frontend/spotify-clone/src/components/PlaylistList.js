@@ -1,15 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-function PlaylistList({ playlists }) {
+function PlaylistList({ playlists, onSelectPlaylist }) {
+    const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+    const [hoveredPlaylist, setHoveredPlaylist] = useState(null);
+
     if (playlists == null || playlists.length === 0) {
         return <p style={{ color: '#fff', textAlign: 'center' }}>No playlists available</p>;
     }
 
+    const handleSelectPlaylist = (playlistName) => {
+        setSelectedPlaylist(playlistName);
+        onSelectPlaylist(playlistName);
+        setTimeout(() => {
+            setSelectedPlaylist(null);
+        }, 300); // Adjust the delay as needed
+    };
+
+    const handleMouseEnter = (playlistName) => {
+        setHoveredPlaylist(playlistName);
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredPlaylist(null);
+    };
+
     return (
         <div style={sidebarStyle}>
             {playlists.map((playlist) => (
-                <div key={playlist.playlist_name} style={playlistCardStyle}>
-                    {/* <img src={playlist.wallpaper_s3} alt={playlist.playlist_name} style={imageStyle} /> */}
+                <div
+                    key={playlist.playlist_name}
+                    style={{
+                        ...playlistCardStyle,
+                        ...(selectedPlaylist === playlist.playlist_name ? selectedCardStyle : {}),
+                        ...(hoveredPlaylist === playlist.playlist_name ? hoverCardStyle : {}),
+                    }}
+                    onClick={() => handleSelectPlaylist(playlist.playlist_name)}
+                    onMouseEnter={() => handleMouseEnter(playlist.playlist_name)}
+                    onMouseLeave={handleMouseLeave}
+                >
                     <div style={playlistInfoStyle}>
                         <h3 style={playlistNameStyle}>{playlist.playlist_name}</h3>
                         <p style={descriptionStyle}>{playlist.descripcion}</p>
@@ -39,11 +67,18 @@ const playlistCardStyle = {
     margin: '10px 0',
     borderRadius: '10px',
     textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s, transform 0.3s',
 };
 
-const imageStyle = {
-    width: '100%',
-    borderRadius: '10px',
+const selectedCardStyle = {
+    backgroundColor: '#1DB954',
+    transform: 'scale(1.05)',
+};
+
+const hoverCardStyle = {
+    backgroundColor: '#4c4c4c',
+    transform: 'scale(1.05)',
 };
 
 const playlistInfoStyle = {
@@ -75,7 +110,6 @@ const songsNumberStyle = {
 };
 
 export default PlaylistList;
-
 
 // [
 //     {
