@@ -10,6 +10,7 @@ function SearchBar({ token }) {
     const [artists, setArtists] = useState([]);
     const [albums, setAlbums] = useState([]);
     const [playlists, setPlaylists] = useState([]);
+    const [recommendations, setRecommendations] = useState([]);
     const [error, setError] = useState(null);
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
@@ -30,7 +31,25 @@ function SearchBar({ token }) {
             }
         };
 
+        const fetchRecommendations = async () => {
+            try {
+                const response = await fetch(process.env.REACT_APP_ENDPOINT_RECOMMENDATIONS, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ user_id: sessionStorage.getItem('user_email') })
+                });
+                const data = await response.json();
+                console.log(data);
+                setRecommendations(data.body.slice(0, 5));
+            } catch (err) {
+                setError('Failed to fetch recommendations');
+            }
+        }
+
         fetchPlaylists();
+        fetchRecommendations();
     }, [token]);
 
     const handleSearch = async () => {
@@ -131,6 +150,12 @@ function SearchBar({ token }) {
                             {error && <p style={{ color: 'red' }}>{error}</p>}
                         </div>
                         <div>
+                        <h2>Recommendations Top 5</h2>
+                            <SongList songs={recommendations.map(rec => ({
+                                song_title: rec.song_title,
+                                artist_name: rec.artist_name,
+                                duration: rec.total_minutes * 60 // Convert minutes to seconds
+                            }))} />
                             <h2>Songs</h2>
                             <SongList songs={songs} />
                             <h2>Artists</h2>

@@ -4,8 +4,8 @@ import os
 # import uuid
 from datetime import datetime
 
-os.environ['AWS_REGION'] = 'us-east-1'
-os.environ['PLAYLIST_SONGS_TABLE'] = 'dev-fp-t_playlist_songs'
+# os.environ['AWS_REGION'] = 'us-east-1'
+# os.environ['PLAYLIST_SONGS_TABLE'] = 'dev-fp-t_playlist_songs'
 
 def lambda_handler(event, context):
     body = event['body']
