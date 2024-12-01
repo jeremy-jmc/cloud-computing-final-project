@@ -14,23 +14,24 @@ function SearchBar({ token }) {
     const [error, setError] = useState(null);
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
 
-    useEffect(() => {
-        const fetchPlaylists = async () => {
-            try {
-                const response = await fetch(process.env.REACT_APP_ENDPOINT_PLAYLISTS, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ user_email: sessionStorage.getItem('user_email') })
-                });
-                const data = await response.json();
-                setPlaylists(data.body);
-            } catch (err) {
-                setError('Failed to fetch playlists');
-            }
-        };
+    const fetchPlaylists = async () => {
+        try {
+            const response = await fetch(process.env.REACT_APP_ENDPOINT_PLAYLISTS, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_email: sessionStorage.getItem('user_email') })
+            });
+            const data = await response.json();
+            setPlaylists(data.body);
+        } catch (err) {
+            setError('Failed to fetch playlists');
+        }
+    };
 
+    useEffect(() => {
+        fetchPlaylists();
         const fetchRecommendations = async () => {
             try {
                 const response = await fetch(process.env.REACT_APP_ENDPOINT_RECOMMENDATIONS, {
@@ -48,7 +49,6 @@ function SearchBar({ token }) {
             }
         }
 
-        fetchPlaylists();
         fetchRecommendations();
     }, [token]);
 
@@ -122,7 +122,7 @@ function SearchBar({ token }) {
         <div style={{ display: 'flex', height: '100%', width: '100%' }}>
             <div style={{ width: '250px', backgroundColor: '#1DB954', padding: '20px', color: '#fff' }}>
                 <h2>Playlists</h2>
-                <PlaylistList playlists={playlists} onSelectPlaylist={handleSelectPlaylist} />
+                <PlaylistList playlists={playlists} onSelectPlaylist={handleSelectPlaylist} fetchPlaylists={fetchPlaylists} />
             </div>
             <div style={{ flex: 1, padding: '20px' }}>
                 {selectedPlaylist ? (

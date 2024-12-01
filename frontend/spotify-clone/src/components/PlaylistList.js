@@ -1,8 +1,38 @@
 import React, { useState } from 'react';
 
-function PlaylistList({ playlists, onSelectPlaylist }) {
+function PlaylistList({ playlists, onSelectPlaylist, fetchPlaylists }) {
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
     const [hoveredPlaylist, setHoveredPlaylist] = useState(null);
+    const [showCreateMenu, setShowCreateMenu] = useState(false);
+    const [newPlaylistName, setNewPlaylistName] = useState('');
+    const [error, setError] = useState(null);
+
+    const handleCreatePlaylist = async () => {
+        try {
+            const response = await fetch(process.env.REACT_APP_ENDPOINT_CREATE_PLAYLIST, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ 
+                    user_email: sessionStorage.getItem('user_email'),
+                    playlist_name: newPlaylistName 
+                }),
+            });
+            const result = await response.json();
+            console.log(result);
+
+            setShowCreateMenu(false);
+            setNewPlaylistName('');
+            setError(null);
+            fetchPlaylists(); // Fetch playlists after creating a new one
+
+        } catch (error) {
+            console.error(error);
+            setError('Failed to create playlist');
+        }
+    };
 
     if (playlists == null || playlists.length === 0) {
         return <p style={{ color: '#fff', textAlign: 'center' }}>No playlists available</p>;
@@ -26,6 +56,7 @@ function PlaylistList({ playlists, onSelectPlaylist }) {
 
     return (
         <div style={sidebarStyle}>
+            <button onClick={() => setShowCreateMenu(true)} style={createButtonStyle}>Create Playlist</button>
             {playlists.map((playlist) => (
                 <div
                     key={playlist.playlist_name}
@@ -46,6 +77,21 @@ function PlaylistList({ playlists, onSelectPlaylist }) {
                     </div>
                 </div>
             ))}
+            {showCreateMenu && (
+                <div style={floatingMenuStyle}>
+                    <h3>Create New Playlist</h3>
+                    <input
+                        type="text"
+                        placeholder="Playlist Name"
+                        value={newPlaylistName}
+                        onChange={(e) => setNewPlaylistName(e.target.value)}
+                        style={{ padding: '10px', margin: '10px', borderRadius: '5px' }}
+                    />
+                    <button onClick={handleCreatePlaylist} style={createButtonStyle}>Create</button>
+                    <button onClick={() => setShowCreateMenu(false)} style={cancelButtonStyle}>Cancel</button>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                </div>
+            )}
         </div>
     );
 }
@@ -107,6 +153,38 @@ const songsNumberStyle = {
     color: '#ccc',
     fontSize: '14px',
     margin: '5px 0',
+};
+
+const createButtonStyle = {
+    padding: '10px',
+    margin: '10px 0',
+    backgroundColor: '#AFAFFA',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+};
+
+const cancelButtonStyle = {
+    padding: '10px',
+    margin: '10px 0',
+    backgroundColor: '#ff4c4c',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+};
+
+const floatingMenuStyle = {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: 'rgba(0, 0, 255, 0.8)', // Changed to blue with rgba
+    padding: '20px',
+    borderRadius: '10px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    zIndex: 1000,
 };
 
 export default PlaylistList;
