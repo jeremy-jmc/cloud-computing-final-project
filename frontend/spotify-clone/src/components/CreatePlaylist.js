@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function CreatePlaylist({ token }) {
+function CreatePlaylist({ token, fetchPlaylists }) {
     const [playlistName, setPlaylistName] = useState('');
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
@@ -18,6 +18,7 @@ function CreatePlaylist({ token }) {
             if (response.ok) {
                 setSuccess(true);
                 setError(null);
+                await fetchPlaylists(); // Update the sidebar playlists
             } else {
                 const data = await response.json();
                 setError(data.message || 'Failed to create playlist');

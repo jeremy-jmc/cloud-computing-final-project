@@ -106,6 +106,7 @@ function SearchBar({ token }) {
             console.log(data)
             setSongs(data.body);
             setSelectedPlaylist(playlistName);
+            await fetchPlaylists(); // Update the sidebar playlists
         } catch (err) {
             setError('Failed to fetch playlist songs');
         }
@@ -157,7 +158,7 @@ function SearchBar({ token }) {
                             <ArtistList artists={artists} />
                             <h2>Albums</h2>
                             <AlbumList albums={albums} />
-                            <h2>Recommendations Top 5</h2>
+                            <h2>Radar de Novedades</h2>
                             <SongList songs={recommendations.map(rec => ({
                                 song_title: rec.song_title,
                                 artist_name: rec.artist_name,

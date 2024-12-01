@@ -4,6 +4,7 @@ import json
 
 # os.environ['AWS_REGION'] = 'us-east-1'
 # os.environ['PLAYLIST_SONGS_TABLE'] = 'dev-fp-t_playlist_songs'
+# os.environ['PLAYLIST_TABLE'] = 'dev-fp-t_playlists'
 
 def lambda_handler(event, context):
     body = event['body']
@@ -19,14 +20,22 @@ def lambda_handler(event, context):
 
     # Conexión a DynamoDB
     dynamodb = boto3.resource('dynamodb', region_name=os.environ.get('AWS_REGION'))
-    table = dynamodb.Table(os.environ.get('PLAYLIST_SONGS_TABLE'))
+    playlist_songs_table = dynamodb.Table(os.environ.get('PLAYLIST_SONGS_TABLE'))
+    playlist_table = dynamodb.Table(os.environ.get('PLAYLIST_TABLE'))
 
     # Agregar canción a la tabla PlaylistSongs
     new_song_entry = {
         'playlist_name': playlist_name,
         'song_title': song_title
     }
-    table.put_item(Item=new_song_entry)
+    playlist_songs_table.put_item(Item=new_song_entry)
+
+    user_email, playlist_name_only = playlist_name.split('#')
+    playlist_table.update_item(
+        Key={'user_email': user_email, 'playlist_name': playlist_name_only},
+        UpdateExpression='SET songs_number = if_not_exists(songs_number, :start) + :val',
+        ExpressionAttributeValues={':val': 1, ':start': 0}
+    )
 
     return {
         'statusCode': 200,
