@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 
-function Login({ onLogin }) {
-    const [email, setEmail] = useState('geraldine_austin@gmail.com');
+function Register({ onRegister }) {
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
-    const handleLogin = async () => {
+    const handleRegister = async () => {
         try {
-            console.log('endpoint login');
-            const response = await fetch(process.env.REACT_APP_ENDPOINT_LOGIN, {
+            const response = await fetch(process.env.REACT_APP_ENDPOINT_SIGNUP, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
-
             });
-            const data = await response.json();
-            console.log(data);
             if (response.ok) {
-                onLogin(data.token);
+                setSuccess(true);
+                setError(null);
+                onRegister();
             } else {
-                setError(data.message || 'Login failed');
+                const data = await response.json();
+                setError(data.message || 'Registration failed');
             }
         } catch (err) {
             setError('Something went wrong.');
@@ -28,9 +28,9 @@ function Login({ onLogin }) {
 
     return (
         <div style={{ textAlign: 'center' }}>
-            <h1>Spotify Clone</h1>
+            <h2>Register</h2>
             <input
-                type="text"
+                type="email"
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -46,14 +46,15 @@ function Login({ onLogin }) {
             />
             <br />
             <button
-                onClick={handleLogin}
+                onClick={handleRegister}
                 style={{ padding: '10px 20px', borderRadius: '5px', backgroundColor: '#1DB954', color: '#fff' }}
             >
-                Login
+                Register
             </button>
             {error && <p style={{ color: 'red' }}>{error}</p>}
+            {success && <p style={{ color: 'green' }}>Registration successful!</p>}
         </div>
     );
 }
 
-export default Login;
+export default Register;
