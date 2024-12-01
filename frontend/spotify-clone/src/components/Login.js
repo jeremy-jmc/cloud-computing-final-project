@@ -17,6 +17,8 @@ function Login({ onLogin }) {
             const data = await response.json();
             console.log(data);
             if (response.ok) {
+                sessionStorage.setItem('user_email', email);
+                sessionStorage.setItem('token', data.token);
                 onLogin(data.token);
             } else {
                 setError(data.message || 'Login failed');

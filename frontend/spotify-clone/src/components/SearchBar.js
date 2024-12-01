@@ -12,17 +12,26 @@ function SearchBar({ token }) {
     const [playlists, setPlaylists] = useState([]);
     const [error, setError] = useState(null);
 
+    
+
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
+                console.log(sessionStorage);
+                console.log(sessionStorage.getItem('user_email'));
                 const response = await fetch(process.env.REACT_APP_ENDPOINT_PLAYLISTS, {
+                    method: 'POST',
                     headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                        'Content-Type': 'application/json',
+                        // Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ user_email: sessionStorage.getItem('user_email') })
                 });
                 const data = await response.json();
-                setPlaylists(data.items);
+                console.log(data);
+                setPlaylists(data.body);
             } catch (err) {
+                console.log(err);
                 setError('Failed to fetch playlists');
             }
         };

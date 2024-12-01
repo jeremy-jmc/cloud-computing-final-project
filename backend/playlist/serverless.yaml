@@ -30,3 +30,12 @@ functions:
           method: put
           cors: true
           integration: lambda
+
+  GetUserPlaylist:
+    handler: GetUserPlaylist.lambda_handler
+    events:
+      - http:
+          path: /playlist/get
+          method: post
+          cors: true
+          integration: lambda
