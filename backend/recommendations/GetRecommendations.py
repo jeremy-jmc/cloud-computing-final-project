@@ -100,8 +100,8 @@ def lambda_handler(event, context):
     }
 
 
-response = lambda_handler({
-    'body': {
-        'user_id': 'linda_choate@gmail.com'
-    }
-}, {})
+# response = lambda_handler({
+#     'body': {
+#         'user_id': 'linda_choate@gmail.com'
+#     }
+# }, {})

@@ -28,6 +28,7 @@ function SongList({ songs }) {
     };
 
     const addSongToPlaylist = (playlistName) => {
+        console.log(selectedSong);
         fetch(process.env.REACT_APP_ENDPOINT_ADD_SONG, {
             method: "PUT",
             headers: {
@@ -35,7 +36,8 @@ function SongList({ songs }) {
             },
             body: JSON.stringify({
                 "playlist_name": `${sessionStorage.getItem('user_email')}#${playlistName}`,
-                "song_title": selectedSong.song_title
+                "song_title": selectedSong.song_title,
+                "artist_name": selectedSong.artist_name
             }),
             // redirect: "follow"
         })
@@ -58,7 +60,8 @@ function SongList({ songs }) {
             {songs.map((song) => (
                 <div key={song.song_title} style={cardStyle}>
                     <h3>{song.song_title}</h3>
-                    <p>{song.album_name || song.artist_name}</p>
+                    <p>{song.artist_name || ''}</p>
+                    <p>{song.album_name || ''}</p>
                     <p>{Math.floor((song.duration || song.song_duration) / 60)}:{('0' + ((song.duration || song.song_duration) % 60)).slice(-2)}</p>
                     <button
                         style={buttonStyle}
