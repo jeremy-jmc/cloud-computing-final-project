@@ -99,7 +99,7 @@ function SearchBar({ token }) {
 
     const handleSelectPlaylist = async (playlistName) => {
         try {
-            const response = await fetch("https://jheozsi749.execute-api.us-east-1.amazonaws.com/dev/playlist/get-songs", {
+            const response = await fetch(process.env.REACT_APP_ENDPOINT_PLAYLIST_SONGS, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
