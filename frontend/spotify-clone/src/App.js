@@ -7,6 +7,17 @@ function App() {
     const [token, setToken] = useState(null);
     const [view, setView] = useState('login');
 
+    
+    
+    const appStyle = {
+        background: 'linear-gradient(180deg, #121212 0%, #282828 100%)',
+        color: '#1DB954',
+        minHeight: '100vh', // Cambiado a minHeight
+        display: 'flex',
+        flexDirection: 'row',
+        transition: 'all 0.5s ease-in-out'
+    };
+
     const containerStyle = {
         background: 'linear-gradient(180deg, #121212 0%, #282828 100%)',
         color: '#1DB954',
@@ -17,16 +28,16 @@ function App() {
         justifyContent: 'center',
         transition: 'all 0.5s ease-in-out'
     };
+
     
-    const appStyle = {
-        background: 'linear-gradient(180deg, #121212 0%, #282828 100%)',
-        color: '#1DB954',
-        minHeight: '100vh', // Cambiado a minHeight
-        display: 'flex',
-        flexDirection: 'row',
-        transition: 'all 0.5s ease-in-out'
+    const handleMouseEnter = (e) => {
+        e.target.style.backgroundColor = '#1ed760';
     };
-    
+
+    const handleMouseLeave = (e) => {
+        e.target.style.backgroundColor = '#1DB954';
+    };
+
 
     const buttonStyle = {
         color: '#fff',
@@ -40,13 +51,6 @@ function App() {
         transition: 'background-color 0.3s ease'
     };
 
-    const handleMouseEnter = (e) => {
-        e.target.style.backgroundColor = '#1ed760';
-    };
-
-    const handleMouseLeave = (e) => {
-        e.target.style.backgroundColor = '#1DB954';
-    };
 
     return (
         <div style={token ? appStyle : containerStyle}>

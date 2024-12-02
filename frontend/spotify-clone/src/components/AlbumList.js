@@ -33,6 +33,13 @@ const cardStyle = {
     transition: 'transform 0.3s, box-shadow 0.3s',
     cursor: 'pointer',
 };
+const cardHover = (e) => {
+    Object.assign(e.target.style, cardHoverStyle);
+};
+
+const cardUnhover = (e) => {
+    Object.assign(e.target.style, cardStyle);
+};
 
 const imageStyle = {
     width: '100%',
@@ -58,12 +65,5 @@ const cardHoverStyle = {
     boxShadow: '0 8px 16px rgba(0, 0, 0, 0.4)',
 };
 
-const cardHover = (e) => {
-    Object.assign(e.target.style, cardHoverStyle);
-};
-
-const cardUnhover = (e) => {
-    Object.assign(e.target.style, cardStyle);
-};
 
 export default AlbumList;
